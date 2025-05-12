@@ -172,3 +172,14 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Project-specific additions
+# SQLite test databases
+test_sqlite.db
+*.db
+
+# Docker container logs
+docker_logs/
+
+# VS Code settings
+.vscode/
