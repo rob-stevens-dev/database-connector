@@ -1,0 +1,19 @@
+# Core dependencies
+sqlalchemy>=2.0.0
+typing_extensions>=4.0.0
+
+# Database drivers
+psycopg2-binary>=2.9.0    # PostgreSQL
+pymysql>=1.0.0            # MySQL
+cx_Oracle>=8.0.0          # Oracle
+pyodbc>=4.0.0             # MSSQL
+
+# SSH tunneling
+sshtunnel>=0.4.0
+
+# Testing
+pytest>=7.0.0
+pytest-cov>=4.0.0
+
+# Docker for integration tests
+docker>=6.0.0
