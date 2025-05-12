@@ -1,12 +1,11 @@
 """
-Connection factory module.
+Database connection factory module.
 
 This module provides the ConnectionFactory class for creating database
 connections of different types with different connection strategies.
 """
 
 import logging
-import copy
 from typing import Dict, Any, Optional, List, Tuple
 
 from databaseconnector.config import DatabaseConfig
@@ -116,13 +115,15 @@ class ConnectionFactory:
             PostgreSQL connection instance
         """
         # Ensure config has the proper driver
-        db_config_copy = copy.deepcopy(db_config)
-        db_config_copy.connection_params['driver'] = db_config_copy.connection_params.get('driver', 'postgresql')
+        if 'driver' not in db_config.connection_params:
+            db_config.connection_params['driver'] = 'postgresql'
         
         strategy = ConnectionFactory._create_connection_strategy(
-            connection_type, db_config_copy, ssh_config, logger
+            connection_type, db_config, ssh_config, logger
         )
-        return PostgreSQLConnection(db_config_copy, logger, strategy)
+        
+        # Create the PostgreSQL connection
+        return PostgreSQLConnection(db_config, logger, strategy)
         
     @staticmethod
     def create_mysql_connection(connection_type: str, db_config: DatabaseConfig, 
@@ -141,13 +142,15 @@ class ConnectionFactory:
             MySQL connection instance
         """
         # Ensure config has the proper driver
-        db_config_copy = copy.deepcopy(db_config)
-        db_config_copy.connection_params['driver'] = db_config_copy.connection_params.get('driver', 'mysql+pymysql')
+        if 'driver' not in db_config.connection_params:
+            db_config.connection_params['driver'] = 'mysql+pymysql'
         
         strategy = ConnectionFactory._create_connection_strategy(
-            connection_type, db_config_copy, ssh_config, logger
+            connection_type, db_config, ssh_config, logger
         )
-        return MySQLConnection(db_config_copy, logger, strategy)
+        
+        # Create the MySQL connection
+        return MySQLConnection(db_config, logger, strategy)
         
     @staticmethod
     def create_oracle_connection(connection_type: str, db_config: DatabaseConfig, 
@@ -166,13 +169,15 @@ class ConnectionFactory:
             Oracle connection instance
         """
         # Ensure config has the proper driver
-        db_config_copy = copy.deepcopy(db_config)
-        db_config_copy.connection_params['driver'] = db_config_copy.connection_params.get('driver', 'oracle+cx_oracle')
+        if 'driver' not in db_config.connection_params:
+            db_config.connection_params['driver'] = 'oracle+cx_oracle'
         
         strategy = ConnectionFactory._create_connection_strategy(
-            connection_type, db_config_copy, ssh_config, logger
+            connection_type, db_config, ssh_config, logger
         )
-        return OracleConnection(db_config_copy, logger, strategy)
+        
+        # Create the Oracle connection
+        return OracleConnection(db_config, logger, strategy)
         
     @staticmethod
     def create_mssql_connection(connection_type: str, db_config: DatabaseConfig, 
@@ -191,13 +196,15 @@ class ConnectionFactory:
             Microsoft SQL Server connection instance
         """
         # Ensure config has the proper driver
-        db_config_copy = copy.deepcopy(db_config)
-        db_config_copy.connection_params['driver'] = db_config_copy.connection_params.get('driver', 'mssql+pyodbc')
+        if 'driver' not in db_config.connection_params:
+            db_config.connection_params['driver'] = 'mssql+pyodbc'
         
         strategy = ConnectionFactory._create_connection_strategy(
-            connection_type, db_config_copy, ssh_config, logger
+            connection_type, db_config, ssh_config, logger
         )
-        return MSSQLConnection(db_config_copy, logger, strategy)
+        
+        # Create the MSSQL connection
+        return MSSQLConnection(db_config, logger, strategy)
         
     @staticmethod
     def create_sqlite_connection(db_path: str, logger=None) -> SQLiteConnection:
@@ -211,4 +218,5 @@ class ConnectionFactory:
         Returns:
             SQLite connection instance
         """
+        # Create the SQLite connection
         return SQLiteConnection(db_path, logger)

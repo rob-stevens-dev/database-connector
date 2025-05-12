@@ -73,12 +73,8 @@ class DirectConnection(ConnectionStrategy):
             self.logger.info(f"Connected to {connection_type} database at "
                             f"{self.config.host}:{self.config.port}")
             return self.connection
-        except sqlalchemy.exc.SQLAlchemyError as e:
-            error_msg = f"Failed to connect to database: {str(e)}"
-            self.logger.error(error_msg)
-            raise ConnectionError(error_msg) from e
         except Exception as e:
-            error_msg = f"Unexpected error connecting to database: {str(e)}"
+            error_msg = f"Failed to connect to database: {str(e)}"
             self.logger.error(error_msg)
             raise ConnectionError(error_msg) from e
     
@@ -98,12 +94,8 @@ class DirectConnection(ConnectionStrategy):
             if self.engine:
                 self.engine.dispose()
                 self.engine = None
-        except sqlalchemy.exc.SQLAlchemyError as e:
-            error_msg = f"Error disconnecting from database: {str(e)}"
-            self.logger.error(error_msg)
-            raise ConnectionError(error_msg) from e
         except Exception as e:
-            error_msg = f"Unexpected error disconnecting from database: {str(e)}"
+            error_msg = f"Error disconnecting from database: {str(e)}"
             self.logger.error(error_msg)
             raise ConnectionError(error_msg) from e
     
@@ -137,14 +129,11 @@ class DirectConnection(ConnectionStrategy):
                 
             # For SELECT queries, return the results as a list of dictionaries
             if query.strip().upper().startswith("SELECT"):
-                return [dict(row) for row in result]
+                # Convert rows to dictionaries
+                return [dict(row._mapping) for row in result]
             return result
-        except sqlalchemy.exc.SQLAlchemyError as e:
-            error_msg = f"Error executing query: {str(e)}"
-            self.logger.error(error_msg)
-            raise QueryError(error_msg) from e
         except Exception as e:
-            error_msg = f"Unexpected error executing query: {str(e)}"
+            error_msg = f"Error executing query: {str(e)}"
             self.logger.error(error_msg)
             raise QueryError(error_msg) from e
     
@@ -183,12 +172,8 @@ class DirectConnection(ConnectionStrategy):
             self.transaction = self.connection.begin()
             self.logger.debug("Transaction started")
             return self.transaction
-        except sqlalchemy.exc.SQLAlchemyError as e:
-            error_msg = f"Error beginning transaction: {str(e)}"
-            self.logger.error(error_msg)
-            raise TransactionError(error_msg) from e
         except Exception as e:
-            error_msg = f"Unexpected error beginning transaction: {str(e)}"
+            error_msg = f"Error beginning transaction: {str(e)}"
             self.logger.error(error_msg)
             raise TransactionError(error_msg) from e
     
@@ -206,12 +191,8 @@ class DirectConnection(ConnectionStrategy):
             self.transaction.commit()
             self.transaction = None
             self.logger.debug("Transaction committed")
-        except sqlalchemy.exc.SQLAlchemyError as e:
-            error_msg = f"Error committing transaction: {str(e)}"
-            self.logger.error(error_msg)
-            raise TransactionError(error_msg) from e
         except Exception as e:
-            error_msg = f"Unexpected error committing transaction: {str(e)}"
+            error_msg = f"Error committing transaction: {str(e)}"
             self.logger.error(error_msg)
             raise TransactionError(error_msg) from e
     
@@ -229,11 +210,7 @@ class DirectConnection(ConnectionStrategy):
             self.transaction.rollback()
             self.transaction = None
             self.logger.debug("Transaction rolled back")
-        except sqlalchemy.exc.SQLAlchemyError as e:
-            error_msg = f"Error rolling back transaction: {str(e)}"
-            self.logger.error(error_msg)
-            raise TransactionError(error_msg) from e
         except Exception as e:
-            error_msg = f"Unexpected error rolling back transaction: {str(e)}"
+            error_msg = f"Error rolling back transaction: {str(e)}"
             self.logger.error(error_msg)
             raise TransactionError(error_msg) from e

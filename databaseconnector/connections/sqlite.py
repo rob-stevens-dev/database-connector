@@ -45,8 +45,12 @@ class SQLiteConnection(ConnectionInterface):
         self.transaction = None
         
         # Validate db_path
-        if db_path != ":memory:" and not os.path.isdir(os.path.dirname(os.path.abspath(db_path))):
-            raise ValueError(f"Directory for SQLite database does not exist: {os.path.dirname(os.path.abspath(db_path))}")
+        if db_path != ":memory:" and not os.path.exists(os.path.dirname(os.path.abspath(db_path))):
+            # Try to create directory
+            try:
+                os.makedirs(os.path.dirname(os.path.abspath(db_path)), exist_ok=True)
+            except Exception:
+                raise ValueError(f"Directory for SQLite database does not exist and cannot be created: {os.path.dirname(os.path.abspath(db_path))}")
         
     def connect(self) -> Any:
         """
@@ -63,6 +67,7 @@ class SQLiteConnection(ConnectionInterface):
             if self.db_path != ":memory:" and not os.path.exists(os.path.dirname(os.path.abspath(self.db_path))):
                 os.makedirs(os.path.dirname(os.path.abspath(self.db_path)), exist_ok=True)
                 
+            # Special SQLite connection string format
             connection_string = f"sqlite:///{self.db_path}"
             self.logger.debug(f"Connecting to SQLite database at: {self.db_path}")
             
@@ -135,7 +140,7 @@ class SQLiteConnection(ConnectionInterface):
                 
             # For SELECT queries, return the results as a list of dictionaries
             if query.strip().upper().startswith("SELECT"):
-                return [dict(row) for row in result]
+                return [dict(row._mapping) for row in result]
             return result
         except sqlalchemy.exc.SQLAlchemyError as e:
             error_msg = f"Error executing query: {str(e)}"

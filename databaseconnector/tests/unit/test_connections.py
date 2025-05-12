@@ -348,7 +348,7 @@ class TestSQLiteConnection:
         self.db_path = ":memory:"
         self.connection = SQLiteConnection(self.db_path, self.logger)
     
-    @patch('database.connections.sqlite.os.path.isdir')
+    @patch('databaseconnector.connections.sqlite.os.path.isdir')
     def test_init_invalid_path(self, mock_isdir):
         """Test initialization with invalid path."""
         # Set up mock
@@ -358,7 +358,7 @@ class TestSQLiteConnection:
         with pytest.raises(ValueError):
             SQLiteConnection("/invalid/path/db.sqlite", self.logger)
     
-    @patch('database.connections.sqlite.sqlalchemy')
+    @patch('databaseconnector.connections.sqlite.sqlalchemy')
     def test_connect(self, mock_sqlalchemy):
         """Test connect method."""
         # Set up mocks
@@ -377,7 +377,7 @@ class TestSQLiteConnection:
         assert self.connection.engine == mock_engine
         assert self.connection.connection == mock_connection
     
-    @patch('database.connections.sqlite.sqlalchemy')
+    @patch('databaseconnector.connections.sqlite.sqlalchemy')
     def test_connect_creates_directory(self, mock_sqlalchemy):
         """Test connect creates directory if needed."""
         # This is a more complex test that would require mocking os.path.exists,

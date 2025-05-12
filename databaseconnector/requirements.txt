@@ -14,6 +14,7 @@ sshtunnel>=0.4.0
 # Testing
 pytest>=7.0.0
 pytest-cov>=4.0.0
+pytest-timeout
 
 # Docker for integration tests
 docker>=6.0.0

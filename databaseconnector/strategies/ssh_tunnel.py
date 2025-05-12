@@ -76,9 +76,10 @@ class SSHTunnelConnection(ConnectionStrategy):
             ConnectionError: If connection fails
         """
         try:
-            # Import here to avoid making sshtunnel a hard dependency
+            # Import dynamically to avoid dependency issues
+            import sshtunnel
             from sshtunnel import SSHTunnelForwarder
-            
+                
             self.logger.info(f"Establishing SSH tunnel to {self.ssh_config['ssh_host']}:{self.ssh_config['ssh_port']}")
             
             # Establish SSH tunnel
@@ -196,14 +197,10 @@ class SSHTunnelConnection(ConnectionStrategy):
                 
             # For SELECT queries, return the results as a list of dictionaries
             if query.strip().upper().startswith("SELECT"):
-                return [dict(row) for row in result]
+                return [dict(row._mapping) for row in result]
             return result
-        except sqlalchemy.exc.SQLAlchemyError as e:
-            error_msg = f"Error executing query through SSH tunnel: {str(e)}"
-            self.logger.error(error_msg)
-            raise QueryError(error_msg) from e
         except Exception as e:
-            error_msg = f"Unexpected error executing query through SSH tunnel: {str(e)}"
+            error_msg = f"Error executing query through SSH tunnel: {str(e)}"
             self.logger.error(error_msg)
             raise QueryError(error_msg) from e
     
@@ -242,12 +239,8 @@ class SSHTunnelConnection(ConnectionStrategy):
             self.transaction = self.connection.begin()
             self.logger.debug("Transaction started via SSH tunnel")
             return self.transaction
-        except sqlalchemy.exc.SQLAlchemyError as e:
-            error_msg = f"Error beginning transaction via SSH tunnel: {str(e)}"
-            self.logger.error(error_msg)
-            raise TransactionError(error_msg) from e
         except Exception as e:
-            error_msg = f"Unexpected error beginning transaction via SSH tunnel: {str(e)}"
+            error_msg = f"Error beginning transaction via SSH tunnel: {str(e)}"
             self.logger.error(error_msg)
             raise TransactionError(error_msg) from e
     
@@ -265,12 +258,8 @@ class SSHTunnelConnection(ConnectionStrategy):
             self.transaction.commit()
             self.transaction = None
             self.logger.debug("Transaction committed via SSH tunnel")
-        except sqlalchemy.exc.SQLAlchemyError as e:
-            error_msg = f"Error committing transaction via SSH tunnel: {str(e)}"
-            self.logger.error(error_msg)
-            raise TransactionError(error_msg) from e
         except Exception as e:
-            error_msg = f"Unexpected error committing transaction via SSH tunnel: {str(e)}"
+            error_msg = f"Error committing transaction via SSH tunnel: {str(e)}"
             self.logger.error(error_msg)
             raise TransactionError(error_msg) from e
     
@@ -288,6 +277,7 @@ class SSHTunnelConnection(ConnectionStrategy):
             self.transaction.rollback()
             self.transaction = None
             self.logger.debug("Transaction rolled back via SSH tunnel")
-        except sqlalchemy.exc.SQLAlchemyError as e:
+        except Exception as e:
             error_msg = f"Error rolling back transaction via SSH tunnel: {str(e)}"
             self.logger.error(error_msg)
+            raise TransactionError(error_msg) from e

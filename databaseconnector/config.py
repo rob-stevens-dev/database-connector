@@ -54,6 +54,10 @@ class DatabaseConfig:
         # Default to postgresql if no driver is specified
         driver = self.connection_params.get('driver', 'postgresql')
         
+        # Special case for SQLite which doesn't use host/port/username/password
+        if driver == 'sqlite':
+            return f"{driver}:///{self.database}"
+        
         # Create the connection string using SQLAlchemy format
         # Note: URL encoding might be needed for special characters in passwords
         return f"{driver}://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"

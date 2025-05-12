@@ -27,7 +27,7 @@ class TestDirectConnection:
         )
         self.connection = DirectConnection(self.db_config, self.logger)
     
-    @patch('database.strategies.direct.sqlalchemy')
+    @patch('databaseconnector.strategies.direct.sqlalchemy')
     def test_connect_success(self, mock_sqlalchemy):
         """Test successful connection."""
         # Set up mocks
@@ -49,13 +49,13 @@ class TestDirectConnection:
         # Verify logger was used
         assert self.logger.info.called
     
-    @patch('database.strategies.direct.sqlalchemy')
+    @patch('databaseconnector.strategies.direct.sqlalchemy')
     def test_connect_failure(self, mock_sqlalchemy):
         """Test connection failure."""
         # Set up mocks
         mock_engine = Mock()
         mock_sqlalchemy.create_engine.return_value = mock_engine
-        mock_engine.connect.side_effect = sqlalchemy.exc.SQLAlchemyError("Connection failed")
+        mock_engine.connect.side_effect = Exception("Connection failed")
         
         # Call connect and verify exception
         with pytest.raises(ConnectionError):
@@ -80,7 +80,7 @@ class TestDirectConnection:
         # Nothing should happen
         assert not self.logger.error.called
     
-    @patch('database.strategies.direct.sqlalchemy')
+    @patch('databaseconnector.strategies.direct.sqlalchemy')
     def test_disconnect_success(self, mock_sqlalchemy):
         """Test successful disconnection."""
         # Set up mocks
@@ -101,7 +101,7 @@ class TestDirectConnection:
         # Verify logger was used
         assert self.logger.info.called
     
-    @patch('database.strategies.direct.sqlalchemy')
+    @patch('databaseconnector.strategies.direct.sqlalchemy')
     def test_disconnect_failure(self, mock_sqlalchemy):
         """Test disconnection failure."""
         # Set up mocks
@@ -111,7 +111,7 @@ class TestDirectConnection:
         self.connection.engine = mock_engine
         
         # Set up disconnect to fail
-        mock_connection.close.side_effect = sqlalchemy.exc.SQLAlchemyError("Disconnect failed")
+        mock_connection.close.side_effect = Exception("Disconnect failed")
         
         # Call disconnect and verify exception
         with pytest.raises(ConnectionError):
@@ -129,7 +129,7 @@ class TestDirectConnection:
         with pytest.raises(ConnectionError):
             self.connection.execute_query("SELECT 1")
     
-    @patch('database.strategies.direct.sqlalchemy')
+    @patch('databaseconnector.strategies.direct.sqlalchemy')
     def test_execute_query_success(self, mock_sqlalchemy):
         """Test successful query execution."""
         # Set up mocks
@@ -139,10 +139,15 @@ class TestDirectConnection:
         # Mock is_connected to return True
         self.connection.is_connected = Mock(return_value=True)
         
+        # Create test rows with _mapping attribute to match SQLAlchemy Row objects
+        class MockRow:
+            def __init__(self, data):
+                self._mapping = data
+        
         # Set up mock result
-        mock_result = Mock()
-        mock_row1 = {"id": 1, "name": "Test"}
-        mock_row2 = {"id": 2, "name": "Test2"}
+        mock_result = MagicMock()
+        mock_row1 = MockRow({"id": 1, "name": "Test"})
+        mock_row2 = MockRow({"id": 2, "name": "Test2"})
         mock_result.__iter__.return_value = [mock_row1, mock_row2]
         mock_connection.execute.return_value = mock_result
         
@@ -155,7 +160,7 @@ class TestDirectConnection:
         assert result[0]["id"] == 1
         assert result[1]["name"] == "Test2"
     
-    @patch('database.strategies.direct.sqlalchemy')
+    @patch('databaseconnector.strategies.direct.sqlalchemy')
     def test_execute_query_with_params(self, mock_sqlalchemy):
         """Test query execution with parameters."""
         # Set up mocks
@@ -165,9 +170,14 @@ class TestDirectConnection:
         # Mock is_connected to return True
         self.connection.is_connected = Mock(return_value=True)
         
+        # Create test row with _mapping attribute to match SQLAlchemy Row object
+        class MockRow:
+            def __init__(self, data):
+                self._mapping = data
+        
         # Set up mock result
-        mock_result = Mock()
-        mock_row = {"id": 1, "name": "Test"}
+        mock_result = MagicMock()
+        mock_row = MockRow({"id": 1, "name": "Test"})
         mock_result.__iter__.return_value = [mock_row]
         mock_connection.execute.return_value = mock_result
         
@@ -180,7 +190,7 @@ class TestDirectConnection:
         assert len(result) == 1
         assert result[0]["id"] == 1
     
-    @patch('database.strategies.direct.sqlalchemy')
+    @patch('databaseconnector.strategies.direct.sqlalchemy')
     def test_execute_query_failure(self, mock_sqlalchemy):
         """Test query execution failure."""
         # Set up mocks
@@ -191,7 +201,7 @@ class TestDirectConnection:
         self.connection.is_connected = Mock(return_value=True)
         
         # Set up execute to fail
-        mock_connection.execute.side_effect = sqlalchemy.exc.SQLAlchemyError("Query failed")
+        mock_connection.execute.side_effect = Exception("Query failed")
         
         # Call execute_query and verify exception
         with pytest.raises(QueryError):
@@ -200,7 +210,7 @@ class TestDirectConnection:
         # Verify logger was used
         assert self.logger.error.called
     
-    @patch('database.strategies.direct.sqlalchemy')
+    @patch('databaseconnector.strategies.direct.sqlalchemy')
     def test_is_connected_true(self, mock_sqlalchemy):
         """Test is_connected when connected."""
         # Set up mocks
@@ -214,7 +224,7 @@ class TestDirectConnection:
         mock_connection.execute.assert_called_once()
         assert result is True
     
-    @patch('database.strategies.direct.sqlalchemy')
+    @patch('databaseconnector.strategies.direct.sqlalchemy')
     def test_is_connected_false_no_connection(self, mock_sqlalchemy):
         """Test is_connected when connection is None."""
         # Connection is not set
@@ -226,7 +236,7 @@ class TestDirectConnection:
         # Verify
         assert result is False
     
-    @patch('database.strategies.direct.sqlalchemy')
+    @patch('databaseconnector.strategies.direct.sqlalchemy')
     def test_is_connected_false_exception(self, mock_sqlalchemy):
         """Test is_connected when execute raises an exception."""
         # Set up mocks
@@ -234,7 +244,7 @@ class TestDirectConnection:
         self.connection.connection = mock_connection
         
         # Set up execute to fail
-        mock_connection.execute.side_effect = sqlalchemy.exc.SQLAlchemyError("Connection lost")
+        mock_connection.execute.side_effect = Exception("Connection lost")
         
         # Call is_connected
         result = self.connection.is_connected()
@@ -243,7 +253,7 @@ class TestDirectConnection:
         mock_connection.execute.assert_called_once()
         assert result is False
     
-    @patch('database.strategies.direct.sqlalchemy')
+    @patch('databaseconnector.strategies.direct.sqlalchemy')
     def test_begin_transaction_success(self, mock_sqlalchemy):
         """Test successful transaction start."""
         # Set up mocks
@@ -272,7 +282,7 @@ class TestDirectConnection:
         with pytest.raises(ConnectionError):
             self.connection.begin_transaction()
     
-    @patch('database.strategies.direct.sqlalchemy')
+    @patch('databaseconnector.strategies.direct.sqlalchemy')
     def test_begin_transaction_failure(self, mock_sqlalchemy):
         """Test transaction start failure."""
         # Set up mocks
@@ -283,7 +293,7 @@ class TestDirectConnection:
         self.connection.is_connected = Mock(return_value=True)
         
         # Set up begin to fail
-        mock_connection.begin.side_effect = sqlalchemy.exc.SQLAlchemyError("Transaction failed")
+        mock_connection.begin.side_effect = Exception("Transaction failed")
         
         # Call begin_transaction and verify exception
         with pytest.raises(TransactionError):
@@ -292,7 +302,7 @@ class TestDirectConnection:
         # Verify logger was used
         assert self.logger.error.called
     
-    @patch('database.strategies.direct.sqlalchemy')
+    @patch('databaseconnector.strategies.direct.sqlalchemy')
     def test_commit_success(self, mock_sqlalchemy):
         """Test successful transaction commit."""
         # Set up mocks
@@ -315,7 +325,7 @@ class TestDirectConnection:
         with pytest.raises(TransactionError):
             self.connection.commit()
     
-    @patch('database.strategies.direct.sqlalchemy')
+    @patch('databaseconnector.strategies.direct.sqlalchemy')
     def test_commit_failure(self, mock_sqlalchemy):
         """Test transaction commit failure."""
         # Set up mocks
@@ -323,7 +333,7 @@ class TestDirectConnection:
         self.connection.transaction = mock_transaction
         
         # Set up commit to fail
-        mock_transaction.commit.side_effect = sqlalchemy.exc.SQLAlchemyError("Commit failed")
+        mock_transaction.commit.side_effect = Exception("Commit failed")
         
         # Call commit and verify exception
         with pytest.raises(TransactionError):
@@ -332,7 +342,7 @@ class TestDirectConnection:
         # Verify logger was used
         assert self.logger.error.called
     
-    @patch('database.strategies.direct.sqlalchemy')
+    @patch('databaseconnector.strategies.direct.sqlalchemy')
     def test_rollback_success(self, mock_sqlalchemy):
         """Test successful transaction rollback."""
         # Set up mocks
@@ -355,7 +365,7 @@ class TestDirectConnection:
         with pytest.raises(TransactionError):
             self.connection.rollback()
     
-    @patch('database.strategies.direct.sqlalchemy')
+    @patch('databaseconnector.strategies.direct.sqlalchemy')
     def test_rollback_failure(self, mock_sqlalchemy):
         """Test transaction rollback failure."""
         # Set up mocks
@@ -363,7 +373,7 @@ class TestDirectConnection:
         self.connection.transaction = mock_transaction
         
         # Set up rollback to fail
-        mock_transaction.rollback.side_effect = sqlalchemy.exc.SQLAlchemyError("Rollback failed")
+        mock_transaction.rollback.side_effect = Exception("Rollback failed")
         
         # Call rollback and verify exception
         with pytest.raises(TransactionError):
@@ -422,13 +432,14 @@ class TestSSHTunnelConnection:
         with pytest.raises(ValueError):
             SSHTunnelConnection(self.db_config, invalid_ssh_config, self.logger)
     
-    @patch('database.strategies.ssh_tunnel.SSHTunnelForwarder', autospec=True)
-    @patch('database.strategies.ssh_tunnel.sqlalchemy')
-    def test_connect_success(self, mock_sqlalchemy, mock_tunnel_class):
+    # Patch the imported module inside the connect method
+    @patch('databaseconnector.strategies.ssh_tunnel.sqlalchemy')
+    @patch('sshtunnel.SSHTunnelForwarder')
+    def test_connect_success(self, mock_ssh_tunnel_forwarder, mock_sqlalchemy):
         """Test successful connection via SSH tunnel."""
         # Set up mocks
         mock_tunnel = Mock()
-        mock_tunnel_class.return_value = mock_tunnel
+        mock_ssh_tunnel_forwarder.return_value = mock_tunnel
         mock_tunnel.local_bind_port = 12345
         
         mock_engine = Mock()
@@ -440,7 +451,7 @@ class TestSSHTunnelConnection:
         result = self.connection.connect()
         
         # Verify
-        mock_tunnel_class.assert_called_once()
+        mock_ssh_tunnel_forwarder.assert_called_once()
         mock_tunnel.start.assert_called_once()
         mock_sqlalchemy.create_engine.assert_called_once()
         mock_engine.connect.assert_called_once()
@@ -453,11 +464,11 @@ class TestSSHTunnelConnection:
         # Verify logger was used
         assert self.logger.info.called
     
-    @patch('database.strategies.ssh_tunnel.SSHTunnelForwarder', autospec=True)
-    def test_connect_failure_tunnel(self, mock_tunnel_class):
+    @patch('sshtunnel.SSHTunnelForwarder')
+    def test_connect_failure_tunnel(self, mock_ssh_tunnel_forwarder):
         """Test connection failure when SSH tunnel fails."""
         # Set up mock to raise an exception
-        mock_tunnel_class.side_effect = Exception("Tunnel failed")
+        mock_ssh_tunnel_forwarder.side_effect = Exception("Tunnel failed")
         
         # Call connect and verify exception
         with pytest.raises(ConnectionError):
@@ -466,19 +477,19 @@ class TestSSHTunnelConnection:
         # Verify logger was used
         assert self.logger.error.called
     
-    @patch('database.strategies.ssh_tunnel.SSHTunnelForwarder', autospec=True)
-    @patch('database.strategies.ssh_tunnel.sqlalchemy')
-    def test_connect_failure_db(self, mock_sqlalchemy, mock_tunnel_class):
+    @patch('databaseconnector.strategies.ssh_tunnel.sqlalchemy')
+    @patch('sshtunnel.SSHTunnelForwarder')
+    def test_connect_failure_db(self, mock_ssh_tunnel_forwarder, mock_sqlalchemy):
         """Test connection failure when database connection fails."""
         # Set up tunnel mock
         mock_tunnel = Mock()
-        mock_tunnel_class.return_value = mock_tunnel
+        mock_ssh_tunnel_forwarder.return_value = mock_tunnel
         mock_tunnel.local_bind_port = 12345
         
         # Set up sqlalchemy mock to fail
         mock_engine = Mock()
         mock_sqlalchemy.create_engine.return_value = mock_engine
-        mock_engine.connect.side_effect = sqlalchemy.exc.SQLAlchemyError("Connection failed")
+        mock_engine.connect.side_effect = Exception("Connection failed")
         
         # Call connect and verify exception
         with pytest.raises(ConnectionError):

@@ -37,8 +37,8 @@ class TestConnectionFactory:
             "ssh_password": "ssh_pass"
         }
     
-    @patch('database.factory.ConnectionFactory._create_connection_strategy')
-    @patch('database.factory.PostgreSQLConnection')
+    @patch('databaseconnector.factory.ConnectionFactory._create_connection_strategy')
+    @patch('databaseconnector.factory.PostgreSQLConnection')
     def test_create_postgres_connection(self, mock_postgres_class, mock_create_strategy):
         """Test create_postgres_connection method."""
         # Set up mocks
@@ -63,8 +63,8 @@ class TestConnectionFactory:
         assert 'driver' in self.db_config.connection_params
         assert self.db_config.connection_params['driver'] == 'postgresql'
     
-    @patch('database.factory.ConnectionFactory._create_connection_strategy')
-    @patch('database.factory.MySQLConnection')
+    @patch('databaseconnector.factory.ConnectionFactory._create_connection_strategy')
+    @patch('databaseconnector.factory.MySQLConnection')
     def test_create_mysql_connection(self, mock_mysql_class, mock_create_strategy):
         """Test create_mysql_connection method."""
         # Set up mocks
@@ -89,8 +89,8 @@ class TestConnectionFactory:
         assert 'driver' in self.db_config.connection_params
         assert self.db_config.connection_params['driver'] == 'mysql+pymysql'
     
-    @patch('database.factory.ConnectionFactory._create_connection_strategy')
-    @patch('database.factory.OracleConnection')
+    @patch('databaseconnector.factory.ConnectionFactory._create_connection_strategy')
+    @patch('databaseconnector.factory.OracleConnection')
     def test_create_oracle_connection(self, mock_oracle_class, mock_create_strategy):
         """Test create_oracle_connection method."""
         # Set up mocks
@@ -115,8 +115,8 @@ class TestConnectionFactory:
         assert 'driver' in self.db_config.connection_params
         assert self.db_config.connection_params['driver'] == 'oracle+cx_oracle'
     
-    @patch('database.factory.ConnectionFactory._create_connection_strategy')
-    @patch('database.factory.MSSQLConnection')
+    @patch('databaseconnector.factory.ConnectionFactory._create_connection_strategy')
+    @patch('databaseconnector.factory.MSSQLConnection')
     def test_create_mssql_connection(self, mock_mssql_class, mock_create_strategy):
         """Test create_mssql_connection method."""
         # Set up mocks
@@ -141,7 +141,7 @@ class TestConnectionFactory:
         assert 'driver' in self.db_config.connection_params
         assert self.db_config.connection_params['driver'] == 'mssql+pyodbc'
     
-    @patch('database.factory.SQLiteConnection')
+    @patch('databaseconnector.factory.SQLiteConnection')
     def test_create_sqlite_connection(self, mock_sqlite_class):
         """Test create_sqlite_connection method."""
         # Set up mock
@@ -159,7 +159,7 @@ class TestConnectionFactory:
         )
         assert result == mock_sqlite
     
-    @patch('database.factory.DirectConnection')
+    @patch('databaseconnector.factory.DirectConnection')
     def test_create_connection_strategy_direct(self, mock_direct_class):
         """Test _create_connection_strategy with direct connection."""
         # Set up mock
@@ -177,7 +177,7 @@ class TestConnectionFactory:
         )
         assert result == mock_direct
     
-    @patch('database.factory.DirectConnection')
+    @patch('databaseconnector.factory.DirectConnection')
     def test_create_connection_strategy_local(self, mock_direct_class):
         """Test _create_connection_strategy with local connection."""
         # Set up mock
@@ -195,7 +195,7 @@ class TestConnectionFactory:
         )
         assert result == mock_direct
     
-    @patch('database.factory.DirectConnection')
+    @patch('databaseconnector.factory.DirectConnection')
     def test_create_connection_strategy_remote(self, mock_direct_class):
         """Test _create_connection_strategy with remote connection."""
         # Set up mock
@@ -213,7 +213,7 @@ class TestConnectionFactory:
         )
         assert result == mock_direct
     
-    @patch('database.factory.SSHTunnelConnection')
+    @patch('databaseconnector.factory.SSHTunnelConnection')
     def test_create_connection_strategy_ssh_tunnel(self, mock_ssh_class):
         """Test _create_connection_strategy with SSH tunnel."""
         # Set up mock
@@ -247,7 +247,7 @@ class TestConnectionFactory:
                 "invalid", self.db_config, None, self.logger
             )
     
-    @patch('database.factory.ConnectionFactory.create_postgres_connection')
+    @patch('databaseconnector.factory.ConnectionFactory.create_postgres_connection')
     def test_create_connection_postgres(self, mock_create_postgres):
         """Test create_connection with PostgreSQL."""
         # Set up mock
@@ -265,7 +265,7 @@ class TestConnectionFactory:
         )
         assert result == mock_postgres
     
-    @patch('database.factory.ConnectionFactory.create_mysql_connection')
+    @patch('databaseconnector.factory.ConnectionFactory.create_mysql_connection')
     def test_create_connection_mysql(self, mock_create_mysql):
         """Test create_connection with MySQL."""
         # Set up mock
@@ -283,7 +283,7 @@ class TestConnectionFactory:
         )
         assert result == mock_mysql
     
-    @patch('database.factory.ConnectionFactory.create_oracle_connection')
+    @patch('databaseconnector.factory.ConnectionFactory.create_oracle_connection')
     def test_create_connection_oracle(self, mock_create_oracle):
         """Test create_connection with Oracle."""
         # Set up mock
@@ -301,7 +301,7 @@ class TestConnectionFactory:
         )
         assert result == mock_oracle
     
-    @patch('database.factory.ConnectionFactory.create_mssql_connection')
+    @patch('databaseconnector.factory.ConnectionFactory.create_mssql_connection')
     def test_create_connection_mssql(self, mock_create_mssql):
         """Test create_connection with MSSQL."""
         # Set up mock
@@ -319,7 +319,7 @@ class TestConnectionFactory:
         )
         assert result == mock_mssql
     
-    @patch('database.factory.ConnectionFactory.create_sqlite_connection')
+    @patch('databaseconnector.factory.ConnectionFactory.create_sqlite_connection')
     def test_create_connection_sqlite(self, mock_create_sqlite):
         """Test create_connection with SQLite."""
         # Set up mock

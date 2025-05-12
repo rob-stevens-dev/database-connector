@@ -11,6 +11,26 @@ from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional, List, Tuple
 
 
+class DatabaseError(Exception):
+    """Base class for all database-related exceptions."""
+    pass
+
+
+class ConnectionError(DatabaseError):
+    """Exception raised for connection-related errors."""
+    pass
+
+
+class QueryError(DatabaseError):
+    """Exception raised for query execution errors."""
+    pass
+
+
+class TransactionError(DatabaseError):
+    """Exception raised for transaction-related errors."""
+    pass
+
+
 class ConnectionInterface(ABC):
     """Abstract base class for all database connections.
     
@@ -187,24 +207,3 @@ class ConnectionStrategy(ABC):
             TransactionError: If no active transaction or rollback fails
         """
         pass
-
-
-# Define custom exceptions for more specific error handling
-class DatabaseError(Exception):
-    """Base class for all database-related exceptions."""
-    pass
-
-
-class ConnectionError(DatabaseError):
-    """Exception raised for connection-related errors."""
-    pass
-
-
-class QueryError(DatabaseError):
-    """Exception raised for query execution errors."""
-    pass
-
-
-class TransactionError(DatabaseError):
-    """Exception raised for transaction-related errors."""
-    pass
